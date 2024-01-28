@@ -53,6 +53,31 @@ ACPP_Player::ACPP_Player()
 	Bat = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Bat"));
 	Bat->SetFlipbook(DebugFlipbook); 
 	Bat->SetupAttachment(SpringArmCompFlipbook); 
+
+	//Obtains the classes of every type of camera shake 
+	static ConstructorHelpers::FClassFinder<class UCameraShakeBase>
+	MoveWeakCameraShakeRef(TEXT("Class'/Game/Blueprints/CameraShakes/BP_MoveWeakCameraShake.BP_MoveWeakCameraShake_C'"));
+
+	if(MoveWeakCameraShakeRef.Class)
+	{
+		MoveWeakCameraShake = MoveWeakCameraShakeRef.Class; 
+	}
+
+	static ConstructorHelpers::FClassFinder<class UCameraShakeBase>
+	MoveMediumCameraShakeRef(TEXT("Class'/Game/Blueprints/CameraShakes/BP_MoveMediumCameraShake.BP_MoveMediumCameraShake_C'"));
+
+	if(MoveMediumCameraShakeRef.Class)
+	{
+		MoveMediumCameraShake = MoveMediumCameraShakeRef.Class; 
+	}
+
+	static ConstructorHelpers::FClassFinder<class UCameraShakeBase>
+	MoveStrongCameraShakeRef(TEXT("Class'/Game/Blueprints/CameraShakes/BP_MoveStrongCameraShake.BP_MoveStrongCameraShake_C'"));
+
+	if(MoveStrongCameraShakeRef.Class)
+	{
+		MoveStrongCameraShake = MoveStrongCameraShakeRef.Class; 
+	}
 }
 
 // Called when the game starts or when spawned
@@ -67,6 +92,7 @@ void ACPP_Player::BeginPlay()
 		//Enables click and mouse over events
 		Input->bEnableClickEvents = true; 
 		Input->bEnableMouseOverEvents = true;
+		Input->bShowMouseCursor = true;
 	}
 
 	//Let's us obtain the start x position of our actor 
@@ -108,9 +134,25 @@ void ACPP_Player::BeginMove()
 		//Sets our mouse position to the actors screen location 
 		Input->SetMouseLocation(StartPosition.X, StartPosition.Y); 
 		//Makes the bat visible (it replaced our cursor)
-		Bat->SetVisibility(true); 
+		Bat->SetVisibility(true);
+		//Stops the camera shake if player begins a new move
+		switch (LastCameraShake)
+		{
+		case 0:
+			Input->ClientStopCameraShake(MoveWeakCameraShake);  
+			break;
+		case 1:
+			Input->ClientStopCameraShake(MoveMediumCameraShake);
+			break;
+		case 2:
+			Input->ClientStopCameraShake(MoveStrongCameraShake);
+			break;
+		case 3:
+			break;
+		}
 
 		PRINT_VARS("StartPosition:%g %g",Green, StartPosition.X, StartPosition.Y);
+		PRINT_VARS("ElapsedTime: %g", Blue, MoveStrongCameraShake.GetDefaultObject()->GetCameraShakeDuration().Get());
 	}
 }
 
@@ -197,7 +239,7 @@ void ACPP_Player::MoveBat()
 		float ZValue; 
 
 		//Obtains the location of the mouse in the world as well the location of our actor 
-		Input->DeprojectMousePositionToWorld(CurrentPosition, PlayerPosition); //To note
+		Input->DeprojectMousePositionToWorld(CurrentPosition, PlayerPosition);
 		PlayerPosition = GetActorLocation();
 
 		//Offsets the X and Z value as well as increasing its displacement speed
@@ -213,7 +255,7 @@ void ACPP_Player::MoveBat()
 		if(XValue <= 0)
 		{
 			//Converts the screen position of the max mouse position to the relative position of the bat
-			Input->DeprojectScreenPositionToWorld(StartPosition.X - BatMaxPosition, StartPosition.Y, XMaxValue, Temp); //To note
+			Input->DeprojectScreenPositionToWorld(StartPosition.X - BatMaxPosition, StartPosition.Y, XMaxValue, Temp);
 			//Takes the value that is within the limits
 			XValue = FMath::Max((XMaxValue.X - PlayerPosition.X) * 44, XValue); 
 		}
@@ -371,7 +413,7 @@ void ACPP_Player::BatAttack()
 	// Bat->SetRelativeLocation(FVector(XBatAttack, BatYPosition, ZBatAttack)); 
 	// if(XBatAttack <= 0)
 	// {
-	// 	XBatAttack += SpeedBatAttack * FApp::GetDeltaTime(); //To note
+	// 	XBatAttack += SpeedBatAttack * FApp::GetDeltaTime();
 	// 	if(XBatAttack >= 0)
 	// 	{
 	// 		EndMoveLogic();
@@ -388,39 +430,34 @@ void ACPP_Player::BatAttack()
 	// }
 }
 
-void ACPP_Player::EndMoveCameraShake()
-{
-	if(ShakeTimeStart == 0)
-	{
-		ShakeTimeStart = FApp::GetCurrentTime();
-	}
-	
-	if(ShakeDuration > FApp::GetCurrentTime() - ShakeTimeStart)
-	{
-		// CameraComp->SetRelativeLocation(FVector(0, FMath::RandRange(-5, 5), 0));
-		// CameraComp->
-	}
-	else
-	{
-		GetWorldTimerManager().ClearTimer(ShakeTimer);
-		CameraComp->SetRelativeLocation(FVector(0, 0, 0)); 
-	}
-}
-
 void ACPP_Player::EndMoveLogic()
 {
 	GetWorldTimerManager().ClearTimer(BatTimer);
 
 	if(DetectGround() && Bat->IsVisible())
 	{ 
-		GetWorldTimerManager().ClearTimer(ShakeTimer); 
 		PRINT_VARS("EndPosition:%g %g",Red, EndPosition.X, EndPosition.Y);
 		//Applies an impulse to our actor from its mesh 
 		XImpulse = StandardizedInput((StartPosition.X - EndPosition.X) * ImpulseMultiplier, MaxImpulse);
 		YImpulse = StandardizedInput((EndPosition.Y - StartPosition.Y) * ImpulseMultiplier, MaxImpulse);
 		PRINT_VARS("XImpulse:%g, YImpulse %g",Blue, XImpulse, YImpulse);
 		CollisionMesh->AddImpulse(FVector(XImpulse,0,YImpulse), FName(TEXT("None")), true); 
-		GetWorldTimerManager().SetTimer(ShakeTimer, this, &ACPP_Player::EndMoveCameraShake, 0.1, true); 
+		
+		if(abs(XImpulse) + abs(YImpulse) < 500)
+		{
+			Input->ClientStartCameraShake(MoveWeakCameraShake);
+			LastCameraShake = Weak;
+		}
+		else if(abs(XImpulse) + abs(YImpulse) < 1000)
+		{
+			Input->ClientStartCameraShake(MoveMediumCameraShake);
+			LastCameraShake = Medium;
+		}
+		else
+		{
+			Input->ClientStartCameraShake(MoveStrongCameraShake);
+			LastCameraShake = Strong;
+		}
 	}
 
 	//Resets our variables values
@@ -429,7 +466,6 @@ void ACPP_Player::EndMoveLogic()
 	XImpulse = 0.f;
 	YImpulse = 0.f;
 	FirstTickBatAttack = true; 
-	ShakeTimeStart = 0.f; 
 	//Hides the players bat (replaces the cursor)
 	Bat->SetVisibility(false);
 	//Places the bat at the center of the player for next movement input 
@@ -440,7 +476,7 @@ void ACPP_Player::EndMoveLogic()
 // {
 // 	// FVector2D Results;
 
-// 	// Results.X = GSystemResolution.ResX; //To note
+// 	// Results.X = GSystemResolution.ResX;
 // 	// Results.Y = GSystemResolution.ResY;
 
 // 	// return Results; 

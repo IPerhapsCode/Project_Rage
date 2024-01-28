@@ -12,12 +12,15 @@
 #include "TimerManager.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
-#include "Misc/App.h" //To note
+#include "Misc/App.h" 
 #pragma endregion My Includes
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "CPP_Player.generated.h"
+
+UENUM()
+enum PossibleCameraShakes {Weak, Medium, Strong, Undefined};
 
 UCLASS()
 class PROJECT_RAGE_API ACPP_Player : public APawn
@@ -89,34 +92,25 @@ class PROJECT_RAGE_API ACPP_Player : public APawn
 		float MaxImpulse = 1000.f;  
 
 		//Determines if we should initialise data in the bat attack 
-		UPROPERTY(VisibleAnywhere, Category="Player | Movement | Bat Attack")
+		UPROPERTY(VisibleAnywhere, Category="Player | Movement | BatAttack")
 		bool FirstTickBatAttack = true;
 
 		//Relative position of the bat
-		UPROPERTY(VisibleAnywhere, Category="Player | Movement | Bat Attack")
+		UPROPERTY(VisibleAnywhere, Category="Player | Movement | BatAttack")
 		FVector BatRelPosition; 
 
 		//Max speed of the animation 
-		UPROPERTY(EditAnywhere, Category="Player | Movement | Bat Attack")
+		UPROPERTY(EditAnywhere, Category="Player | Movement | BatAttack")
 		float DefaultSpeedBatAttack = 1500; 
 		
 		//Determines the speed of the animation
-		UPROPERTY(VisibleAnywhere, Category="Player | Movement | Bat Attack")
+		UPROPERTY(VisibleAnywhere, Category="Player | Movement | BatAttack")
 		float SpeedBatAttack = DefaultSpeedBatAttack; 
 
-		UPROPERTY(EditAnywhere, Category="Player | Movement | Bat Attack")
+		UPROPERTY(EditAnywhere, Category="Player | Movement | BatAttack")
 		float ALinearBatAttack;
 
-		UPROPERTY(VisibleAnywhere, Category="Player | Movement | Bat Attack")
-		float ShakeTimeStart = 0.f; 
-
-		UPROPERTY(EditAnywhere, Category="Player | Movement | Bat Attack")
-		float ShakeDuration = 0.5f; 
-
-		UPROPERTY(VisibleAnywhere, Category="Player | Movement | Bat Attack")
-		FTimerHandle ShakeTimer;
-
-		UPROPERTY(VisibleAnywhere, Category="Player | Movement | Bat Attack")
+		UPROPERTY(VisibleAnywhere, Category="Player | Movement | BatAttack")
 		FTimerHandle BatTimer;
 
 		UPROPERTY(VisibleAnywhere, Category="Player")
@@ -154,6 +148,20 @@ class PROJECT_RAGE_API ACPP_Player : public APawn
 
 		UPROPERTY(VisibleAnywhere, Category="Player | Movement")
 		float BatMaxPosition = MaxImpulse / ImpulseMultiplier;
+
+		UPROPERTY(EditDefaultsOnly, Category="Player | Movement | BatAttack")
+		TSubclassOf<UCameraShakeBase> MoveWeakCameraShake; 
+
+		UPROPERTY(EditDefaultsOnly, Category="Player | Movement | BatAttack")
+		TSubclassOf<UCameraShakeBase> MoveMediumCameraShake; 
+
+		UPROPERTY(EditDefaultsOnly, Category="Player | Movement | BatAttack")
+		TSubclassOf<UCameraShakeBase> MoveStrongCameraShake; 
+
+		UPROPERTY(VisibleAnywhere, Category="Player | Movement | BatAttack")
+		TEnumAsByte<PossibleCameraShakes> LastCameraShake = Undefined;
+
+		
 	protected:
 	private:
 	#pragma endregion Member Variables
@@ -165,8 +173,6 @@ class PROJECT_RAGE_API ACPP_Player : public APawn
 		void BeginMove(); 
 
 		void EndMove();
-
-		void EndMoveCameraShake(); 
 
 		void EndMoveLogic();  
 
