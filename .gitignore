@@ -1,5 +1,6 @@
 # Folders to ignore #
 #####################
+/.vs
 /.vscode
 /DerivedDataCache
 /Intermediate

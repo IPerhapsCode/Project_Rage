@@ -13,6 +13,7 @@
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 #include "Misc/App.h" 
+#include "GameFramework/GameUserSettings.h"
 #pragma endregion My Includes
 
 #include "CoreMinimal.h"
@@ -83,11 +84,11 @@ class PROJECT_RAGE_API ACPP_Player : public APawn
 		UPROPERTY(VisibleAnywhere, Category="Player | Movement")
 		float YImpulse = 0.f; 
 
-		//X axis impulse multiplier
+		//Impulse multiplier
 		UPROPERTY(EditAnywhere, Category="Player | Movement")
-		float ImpulseMultiplier = 2.f;
+		float ImpulseMultiplier = 3.f;
 
-		//X axis max impulse strength
+		//Max impulse strength
 		UPROPERTY(EditAnywhere, Category="Player | Movement")
 		float MaxImpulse = 1000.f;  
 
@@ -107,12 +108,15 @@ class PROJECT_RAGE_API ACPP_Player : public APawn
 		UPROPERTY(VisibleAnywhere, Category="Player | Movement | BatAttack")
 		float SpeedBatAttack = DefaultSpeedBatAttack; 
 
+		//A value in the linear function of the bat attack
 		UPROPERTY(EditAnywhere, Category="Player | Movement | BatAttack")
 		float ALinearBatAttack;
 
+		//Timer used to determine the speed of the bat attack
 		UPROPERTY(VisibleAnywhere, Category="Player | Movement | BatAttack")
 		FTimerHandle BatTimer;
 
+		//Refresh rate of the bat attack logic
 		UPROPERTY(VisibleAnywhere, Category="Player")
 		float TimerRefreshRate = 0.01f;
 
@@ -146,22 +150,28 @@ class PROJECT_RAGE_API ACPP_Player : public APawn
 		UPROPERTY(EditAnywhere, Category="Player | Rotation")
 		float RotationMultiplier = 50.f;
 
+		//Determines the limit of the bat on screen 
 		UPROPERTY(VisibleAnywhere, Category="Player | Movement")
 		float BatMaxPosition = MaxImpulse / ImpulseMultiplier;
 
+		//Camera shake for low input strength
 		UPROPERTY(EditDefaultsOnly, Category="Player | Movement | BatAttack")
 		TSubclassOf<UCameraShakeBase> MoveWeakCameraShake; 
 
+		//Camera shake for medium input strength
 		UPROPERTY(EditDefaultsOnly, Category="Player | Movement | BatAttack")
 		TSubclassOf<UCameraShakeBase> MoveMediumCameraShake; 
 
+		//Camera shake for strong input strength
 		UPROPERTY(EditDefaultsOnly, Category="Player | Movement | BatAttack")
 		TSubclassOf<UCameraShakeBase> MoveStrongCameraShake; 
 
+		//Determines what was the last type of camera shake used
 		UPROPERTY(VisibleAnywhere, Category="Player | Movement | BatAttack")
 		TEnumAsByte<PossibleCameraShakes> LastCameraShake = Undefined;
 
-		
+		//UPROPERTY(VisibleAnywhere)
+		//UGameUserSettings* UserSettings = UGameUserSettings(); 
 	protected:
 	private:
 	#pragma endregion Member Variables

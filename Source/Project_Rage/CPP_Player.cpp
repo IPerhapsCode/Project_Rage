@@ -14,6 +14,8 @@
 */
 #include "CPP_Player.h"
 
+//FIntPoint Resolution; wot
+
 // Sets default values
 ACPP_Player::ACPP_Player()
 {
@@ -23,7 +25,7 @@ ACPP_Player::ACPP_Player()
 	//Creates a spherical collision mesh within the subobjects of our actor
 	CollisionMesh = CreateDefaultSubobject<class USphereComponent>(TEXT("CollisionMesh"));
 	CollisionMeshRadius = CollisionMesh->GetScaledSphereRadius(); 
-	RootComponent = CollisionMesh; 
+	RootComponent = CollisionMesh;
 
 	SpringArmCompFlipbook = CreateDefaultSubobject<USpringArmComponent>(TEXT("Player Flipbook Spring Arm")); 
 	SpringArmCompFlipbook->SetupAttachment(RootComponent);
@@ -100,7 +102,9 @@ void ACPP_Player::BeginPlay()
 	//Makes sure the bat is not visible once the game has started and no inputs have been pressed yet 
 	Bat->SetVisibility(false);
 	//Keeps the Y position of the bat so that it never leaves that position later on 
-	BatYPosition = Bat->GetRelativeLocation().Y;
+	BatYPosition = Bat->GetRelativeLocation().Y; 
+
+	//Resolution = UserSettings->GetScreenResolution(); wot
 
 	if(!CollisionMesh)
 	{
@@ -115,7 +119,9 @@ void ACPP_Player::Tick(float DeltaTime)
 
 	ChangeRotation(); 
 
-	StopPassiveMovement(DeltaTime);
+	StopPassiveMovement(DeltaTime); 
+
+	//PRINT_VARS("X: %i, Y: %i", Green, Resolution.X, Resolution.Y);
 }
 
 // Called to bind functionality to input
