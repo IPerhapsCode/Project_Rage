@@ -36,7 +36,10 @@ ACPP_Player::ACPP_Player()
 
 	//Creates a flipbook within the subobjects of our actor, sets the flipbook to our default animation and attaches the subobject to CollisionMesh
 	Flipbook = CreateDefaultSubobject<class UPaperFlipbookComponent>(TEXT("Flipbook")); 
-	Flipbook->SetFlipbook(DebugFlipbook);
+	if(DebugFlipbook)
+	{
+		Flipbook->SetFlipbook(DebugFlipbook);
+	}
 	Flipbook->SetupAttachment(SpringArmCompFlipbook);
 
 	//Attaches the springarm to our flipbook, changes the length of the springarm, and disables inherited rotation for the camera
@@ -53,7 +56,10 @@ ACPP_Player::ACPP_Player()
 
 	//Creates the bat flipbook subobject as well as attaching it to our springarmcomp flipbook
 	Bat = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Bat"));
-	Bat->SetFlipbook(DebugFlipbook); 
+	if(DebugFlipbook)
+	{
+		Bat->SetFlipbook(DebugFlipbook); 
+	}
 	Bat->SetupAttachment(SpringArmCompFlipbook); 
 
 	//Obtains the classes of every type of camera shake 
