@@ -11,6 +11,7 @@
 -Add sort of a double jump to the character
 -Need to setup a git for this project
 -There's possibly a bug with the way the speed of the bat is calculated where it is slower then intended but i cant currently replecate it consistently
+-Take notes on postprocessing, stencils and enabling them, trasnparent and additive blendmodes for textures being incompatible with stencils for postprocessing, post processing volumes 
 */
 #include "CPP_Player.h"
 
@@ -146,7 +147,9 @@ void ACPP_Player::BeginMove()
 		//Sets our mouse position to the actors screen location 
 		Input->SetMouseLocation(StartPosition.X, StartPosition.Y); 
 		//Makes the bat visible (it replaced our cursor)
+		Bat->SetRelativeLocation(FVector(0.f,BatYPosition,0.f)); 
 		Bat->SetVisibility(true);
+		FirstTickBatAttack = true;
 		//Stops the camera shake if player begins a new move
 		switch (LastCameraShake)
 		{
@@ -476,8 +479,7 @@ void ACPP_Player::EndMoveLogic()
 	StartPosition = FVector2D();
 	EndPosition = FVector2D();
 	XImpulse = 0.f;
-	YImpulse = 0.f;
-	FirstTickBatAttack = true; 
+	YImpulse = 0.f; 
 	//Hides the players bat (replaces the cursor)
 	Bat->SetVisibility(false);
 	//Places the bat at the center of the player for next movement input 
