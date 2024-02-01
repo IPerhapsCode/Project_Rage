@@ -11,7 +11,7 @@
 -Add sort of a double jump to the character
 -Need to setup a git for this project
 -There's possibly a bug with the way the speed of the bat is calculated where it is slower then intended but i cant currently replecate it consistently
--Take notes on postprocessing, stencils and enabling them, trasnparent and additive blendmodes for textures being incompatible with stencils for postprocessing, post processing volumes 
+-Change the multiplier based on current screen resolution
 */
 #include "CPP_Player.h"
 
