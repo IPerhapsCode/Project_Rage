@@ -112,6 +112,15 @@ void ACPP_Player::BeginPlay()
 	BatYPosition = Bat->GetRelativeLocation().Y; 
 
 	//Resolution = UserSettings->GetScreenResolution(); wot
+	// int32 x, y;
+	// FLatentActionInfo test = FLatentActionInfo(INDEX_NONE, INDEX_NONE, TEXT("Input->GetViewportSize(x, y)"), this);
+	// UKismetSystemLibrary::Delay(this, 5.f, test);
+	// Input->GetViewportSize(x, y);
+	// if(x != 0 && y != 0)
+	// {
+	// 	PRINT_VARS("X: %i, Y: %i", Red, x, y);
+	// }
+	// PRINT_VARS("X: %i, Y: %i", Red, x, y);
 
 	if(!CollisionMesh)
 	{
