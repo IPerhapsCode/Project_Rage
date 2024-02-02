@@ -84,9 +84,17 @@ class PROJECT_RAGE_API ACPP_Player : public APawn
 		UPROPERTY(VisibleAnywhere, Category="Player | Movement")
 		float YImpulse = 0.f; 
 
+		//Default Impulse multiplier
+		UPROPERTY(EditAnywhere, Category="Player | Movement")
+		float DefaultImpulseMultiplier[2] = {1.75f, 2.25f}; //X, Y
+
 		//Impulse multiplier
 		UPROPERTY(EditAnywhere, Category="Player | Movement")
-		float ImpulseMultiplier = 3.f;
+		float ImpulseMultiplier[2] = {DefaultImpulseMultiplier[0], DefaultImpulseMultiplier[1]}; //X, Y
+
+		//Default ViewportSize for given  default multiplier
+		UPROPERTY(EditAnywhere, Category="Player | Movement")
+		float DefaultViewport[2] = {3830.f, 2040.f}; //X, Y
 
 		//Max impulse strength
 		UPROPERTY(EditAnywhere, Category="Player | Movement")
@@ -152,7 +160,7 @@ class PROJECT_RAGE_API ACPP_Player : public APawn
 
 		//Determines the limit of the bat on screen 
 		UPROPERTY(VisibleAnywhere, Category="Player | Movement")
-		float BatMaxPosition = MaxImpulse / ImpulseMultiplier;
+		float BatMaxPosition[2] = {MaxImpulse / ImpulseMultiplier[0], MaxImpulse / ImpulseMultiplier[1]}; //X, Y
 
 		//Camera shake for low input strength
 		UPROPERTY(EditDefaultsOnly, Category="Player | Movement | BatAttack")
@@ -169,9 +177,6 @@ class PROJECT_RAGE_API ACPP_Player : public APawn
 		//Determines what was the last type of camera shake used
 		UPROPERTY(VisibleAnywhere, Category="Player | Movement | BatAttack")
 		TEnumAsByte<PossibleCameraShakes> LastCameraShake = Undefined;
-
-		//UPROPERTY(VisibleAnywhere)
-		//UGameUserSettings* UserSettings = UGameUserSettings(); 
 	protected:
 	private:
 	#pragma endregion Member Variables

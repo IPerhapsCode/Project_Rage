@@ -7,7 +7,7 @@
 ACPP_Platform::ACPP_Platform()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 
 	CollisionMesh = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision Mesh"));

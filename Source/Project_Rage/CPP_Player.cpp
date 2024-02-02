@@ -11,7 +11,7 @@
 -Add sort of a double jump to the character
 -Need to setup a git for this project
 -There's possibly a bug with the way the speed of the bat is calculated where it is slower then intended but i cant currently replecate it consistently
--Change the multiplier based on current screen resolution
+-The multiplier is currently being changed based on resolution but it could be better 
 */
 #include "CPP_Player.h"
 
@@ -111,17 +111,6 @@ void ACPP_Player::BeginPlay()
 	//Keeps the Y position of the bat so that it never leaves that position later on 
 	BatYPosition = Bat->GetRelativeLocation().Y; 
 
-	//Resolution = UserSettings->GetScreenResolution(); wot
-	// int32 x, y;
-	// FLatentActionInfo test = FLatentActionInfo(INDEX_NONE, INDEX_NONE, TEXT("Input->GetViewportSize(x, y)"), this);
-	// UKismetSystemLibrary::Delay(this, 5.f, test);
-	// Input->GetViewportSize(x, y);
-	// if(x != 0 && y != 0)
-	// {
-	// 	PRINT_VARS("X: %i, Y: %i", Red, x, y);
-	// }
-	// PRINT_VARS("X: %i, Y: %i", Red, x, y);
-
 	if(!CollisionMesh)
 	{
 		PRINT("Hello");
@@ -151,6 +140,16 @@ void ACPP_Player::BeginMove()
 {
 	if(DetectGround())
 	{
+		//Obtain the current viewport and determine the correct attack multiplier based on it (Probably can me optimized later to only do once if the resolution has been changed)
+		int32 ViewportSize[2];
+		Input->GetViewportSize(ViewportSize[0], ViewportSize[1]); //X, Y
+		PRINT_VARS("X: %i, Y: %i", Red, ViewportSize[0], ViewportSize[1]);
+		for(int32 i = 0; i < 2; ++i)
+		{
+			ImpulseMultiplier[i] = DefaultImpulseMultiplier[i] * DefaultViewport[i] / ViewportSize[i]; 
+			BatMaxPosition[i] = MaxImpulse / ImpulseMultiplier[i]; 
+		}
+		PRINT_VARS("X: %g, Y: %g", Orange, ImpulseMultiplier[0], ImpulseMultiplier[1]);
 		//Obtains our actors location and converts it to its screen location
 		Input->ProjectWorldLocationToScreen(GetActorLocation(), StartPosition);
 		//Sets our mouse position to the actors screen location 
@@ -279,14 +278,14 @@ void ACPP_Player::MoveBat()
 		if(XValue <= 0)
 		{
 			//Converts the screen position of the max mouse position to the relative position of the bat
-			Input->DeprojectScreenPositionToWorld(StartPosition.X - BatMaxPosition, StartPosition.Y, XMaxValue, Temp);
+			Input->DeprojectScreenPositionToWorld(StartPosition.X - BatMaxPosition[0], StartPosition.Y, XMaxValue, Temp);
 			//Takes the value that is within the limits
 			XValue = FMath::Max((XMaxValue.X - PlayerPosition.X) * 44, XValue); 
 		}
 		else
 		{
 			//Converts the screen position of the max mouse position to the relative position of the bat
-			Input->DeprojectScreenPositionToWorld(StartPosition.X + BatMaxPosition, StartPosition.Y, XMaxValue, Temp);
+			Input->DeprojectScreenPositionToWorld(StartPosition.X + BatMaxPosition[0], StartPosition.Y, XMaxValue, Temp);
 			//Takes the value that is within the limits
 			XValue = FMath::Min((XMaxValue.X - PlayerPosition.X) * 44, XValue); 
 		}
@@ -295,14 +294,14 @@ void ACPP_Player::MoveBat()
 		if(ZValue <= 0)
 		{
 			//Converts the screen position of the max mouse position to the relative position of the bat
-			Input->DeprojectScreenPositionToWorld(StartPosition.X, StartPosition.Y + BatMaxPosition, ZMaxValue, Temp); 
+			Input->DeprojectScreenPositionToWorld(StartPosition.X, StartPosition.Y + BatMaxPosition[1], ZMaxValue, Temp); 
 			//Takes the value that is within the limits
 			ZValue = FMath::Max((ZMaxValue.Z - PlayerPosition.Z) * 44 + 40, ZValue);
 		}
 		else
 		{
 			//Converts the screen position of the max mouse position to the relative position of the bat
-			Input->DeprojectScreenPositionToWorld(StartPosition.X, StartPosition.Y - BatMaxPosition, ZMaxValue, Temp);
+			Input->DeprojectScreenPositionToWorld(StartPosition.X, StartPosition.Y - BatMaxPosition[1], ZMaxValue, Temp);
 			//Takes the value that is within the limits
 			ZValue = FMath::Min((ZMaxValue.Z - PlayerPosition.Z) * 44 + 40, ZValue);
 		}
@@ -321,23 +320,23 @@ void ACPP_Player::MaxBatMovement()
 	
 	Input->GetMousePosition(MousePosition.X, MousePosition.Y); 
 
-	if(MousePosition.X > StartPosition.X + BatMaxPosition)
+	if(MousePosition.X > StartPosition.X + BatMaxPosition[0])
 	{
 		
-		MousePosition.X = StartPosition.X + BatMaxPosition;
+		MousePosition.X = StartPosition.X + BatMaxPosition[0];
 	}
-	else if(MousePosition.X < StartPosition.X - BatMaxPosition)
+	else if(MousePosition.X < StartPosition.X - BatMaxPosition[0])
 	{
-		MousePosition.X = StartPosition.X - BatMaxPosition;
+		MousePosition.X = StartPosition.X - BatMaxPosition[0];
 	}
 
-	if(MousePosition.Y > StartPosition.Y + BatMaxPosition)
+	if(MousePosition.Y > StartPosition.Y + BatMaxPosition[1])
 	{
-		MousePosition.Y = StartPosition.Y + BatMaxPosition;
+		MousePosition.Y = StartPosition.Y + BatMaxPosition[1];
 	}
-	else if(MousePosition.Y < StartPosition.Y - BatMaxPosition)
+	else if(MousePosition.Y < StartPosition.Y - BatMaxPosition[1])
 	{
-		MousePosition.Y = StartPosition.Y - BatMaxPosition; 
+		MousePosition.Y = StartPosition.Y - BatMaxPosition[1]; 
 	}
 
 	Input->SetMouseLocation(MousePosition.X, MousePosition.Y); 
@@ -383,7 +382,7 @@ void ACPP_Player::BatAttack()
 		//Makes sure that wherever the player is batting from, the animation still takes the same amount of time
 	 	FVector2D MousePosition; 
 	 	Input->GetMousePosition(MousePosition.X, MousePosition.Y);
-		SpeedBatAttack = DefaultSpeedBatAttack * abs(MousePosition.X - StartPosition.X) / BatMaxPosition;
+		SpeedBatAttack = DefaultSpeedBatAttack * abs(MousePosition.X - StartPosition.X) / BatMaxPosition[0];
 	}
 
 	BatRelPosition.Z = ALinearBatAttack * BatRelPosition.X; 
@@ -421,7 +420,7 @@ void ACPP_Player::BatAttack()
 	// 	//Makes sure that wherever the player is batting from, the animation still takes the same amount of time
 	// 	FVector2D MousePosition; 
 	// 	Input->GetMousePosition(MousePosition.X, MousePosition.Y);
-	// 	SpeedBatAttack = DefaultSpeedBatAttack * abs(MousePosition.X - StartPosition.X) / BatMaxPosition;
+	// 	SpeedBatAttack = DefaultSpeedBatAttack * abs(MousePosition.X - StartPosition.X) / BatMaxPosition[0];
 	// }
 
 	// //Moves the bat according to an exponential curve, once X = 0 ends the movement and calls the impulse logic
@@ -462,8 +461,8 @@ void ACPP_Player::EndMoveLogic()
 	{ 
 		PRINT_VARS("EndPosition:%g %g",Red, EndPosition.X, EndPosition.Y);
 		//Applies an impulse to our actor from its mesh 
-		XImpulse = StandardizedInput((StartPosition.X - EndPosition.X) * ImpulseMultiplier, MaxImpulse);
-		YImpulse = StandardizedInput((EndPosition.Y - StartPosition.Y) * ImpulseMultiplier, MaxImpulse);
+		XImpulse = StandardizedInput((StartPosition.X - EndPosition.X) * ImpulseMultiplier[0], MaxImpulse);
+		YImpulse = StandardizedInput((EndPosition.Y - StartPosition.Y) * ImpulseMultiplier[1], MaxImpulse);
 		PRINT_VARS("XImpulse:%g, YImpulse %g",Blue, XImpulse, YImpulse);
 		CollisionMesh->AddImpulse(FVector(XImpulse,0,YImpulse), FName(TEXT("None")), true); 
 		
