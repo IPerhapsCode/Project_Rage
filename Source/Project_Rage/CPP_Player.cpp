@@ -12,6 +12,7 @@
 -Need to setup a git for this project
 -There's possibly a bug with the way the speed of the bat is calculated where it is slower then intended but i cant currently replecate it consistently
 -The multiplier is currently being changed based on resolution but it could be better 
+-Need a cleaner sprite for the player and need to change the values of the mouse and the bat based on the fov of the camera
 */
 #include "CPP_Player.h"
 
@@ -46,7 +47,7 @@ ACPP_Player::ACPP_Player()
 	//Attaches the springarm to our flipbook, changes the length of the springarm, and disables inherited rotation for the camera
 	SpringArmCompCam = CreateDefaultSubobject<USpringArmComponent>(TEXT("Player Camera Spring Arm")); 
 	SpringArmCompCam->SetupAttachment(Flipbook);
-	SpringArmCompCam->TargetArmLength = 500.f; 
+	SpringArmCompCam->TargetArmLength = 1000.f; 
 	SpringArmCompCam->bInheritPitch = false;
 	SpringArmCompCam->bInheritYaw = false;
 	SpringArmCompCam->bInheritRoll = false;
@@ -266,8 +267,8 @@ void ACPP_Player::MoveBat()
 		PlayerPosition = GetActorLocation();
 
 		//Offsets the X and Z value as well as increasing its displacement speed
-		XValue = (CurrentPosition.X - PlayerPosition.X) * 44;
-		ZValue = (CurrentPosition.Z - PlayerPosition.Z) * 44 + 40;
+		XValue = (CurrentPosition.X - PlayerPosition.X) * 93;
+		ZValue = (CurrentPosition.Z - PlayerPosition.Z) * 93 + 85;
 
 		//Makes sure the character doesnt jiggle when he gets to the edge of the zone
 		FVector XMaxValue;
@@ -280,14 +281,14 @@ void ACPP_Player::MoveBat()
 			//Converts the screen position of the max mouse position to the relative position of the bat
 			Input->DeprojectScreenPositionToWorld(StartPosition.X - BatMaxPosition[0], StartPosition.Y, XMaxValue, Temp);
 			//Takes the value that is within the limits
-			XValue = FMath::Max((XMaxValue.X - PlayerPosition.X) * 44, XValue); 
+			XValue = FMath::Max((XMaxValue.X - PlayerPosition.X) * 93, XValue); 
 		}
 		else
 		{
 			//Converts the screen position of the max mouse position to the relative position of the bat
 			Input->DeprojectScreenPositionToWorld(StartPosition.X + BatMaxPosition[0], StartPosition.Y, XMaxValue, Temp);
 			//Takes the value that is within the limits
-			XValue = FMath::Min((XMaxValue.X - PlayerPosition.X) * 44, XValue); 
+			XValue = FMath::Min((XMaxValue.X - PlayerPosition.X) * 93, XValue); 
 		}
 
 		//Z axis limit
@@ -296,14 +297,14 @@ void ACPP_Player::MoveBat()
 			//Converts the screen position of the max mouse position to the relative position of the bat
 			Input->DeprojectScreenPositionToWorld(StartPosition.X, StartPosition.Y + BatMaxPosition[1], ZMaxValue, Temp); 
 			//Takes the value that is within the limits
-			ZValue = FMath::Max((ZMaxValue.Z - PlayerPosition.Z) * 44 + 40, ZValue);
+			ZValue = FMath::Max((ZMaxValue.Z - PlayerPosition.Z) * 93 + 85, ZValue);
 		}
 		else
 		{
 			//Converts the screen position of the max mouse position to the relative position of the bat
 			Input->DeprojectScreenPositionToWorld(StartPosition.X, StartPosition.Y - BatMaxPosition[1], ZMaxValue, Temp);
 			//Takes the value that is within the limits
-			ZValue = FMath::Min((ZMaxValue.Z - PlayerPosition.Z) * 44 + 40, ZValue);
+			ZValue = FMath::Min((ZMaxValue.Z - PlayerPosition.Z) * 93 + 85, ZValue);
 		}
 
 		//Sets the relative location of the bat 
